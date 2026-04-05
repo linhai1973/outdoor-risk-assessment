@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>户外运动风险管理评估 - 管理后台</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 20px 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; color: #333; }
+        .header .btn { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .header .btn:hover { background: #5a6fd6; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card .value { font-size: 32px; font-weight: bold; color: #667eea; }
+        .stat-card .label { font-size: 14px; color: #888; margin-top: 5px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 18px; color: #333; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #666; font-weight: 600; }
+        tr:hover { background: #f8f9fa; }
+        .score-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .score-high { background: #d4edda; color: #155724; }
+        .score-mid { background: #fff3cd; color: #856404; }
+        .score-low { background: #f8d7da; color: #721c24; }
+        .dimension-bar { height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; margin: 2px 0; }
+        .dimension-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 10px; }
+        .empty { text-align: center; padding: 40px; color: #888; }
+        .refresh-btn { background: #28a745; margin-left: 10px; }
+        .refresh-btn:hover { background: #218838; }
+        .export-btn { background: #17a2b8; }
+        .export-btn:hover { background: #138496; }
+        .clear-btn { background: #dc3545; }
+        .clear-btn:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 户外运动风险管理评估 - 管理后台</h1>
+            <div>
+                <button class="btn" onclick="loadData()">🔄 刷新数据</button>
+                <button class="btn export-btn" onclick="exportExcel()">📥 导出Excel</button>
+                <button class="btn clear-btn" onclick="clearData()">🗑️ 清空数据</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value" id="totalCount">0</div>
+                <div class="label">总参与人数</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="avgScore">0</div>
+                <div class="label">平均得分</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="maxScore">0</div>
+                <div class="label">最高分</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="minScore">0</div>
+                <div class="label">最低分</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>维度分析（平均分）</h2>
+            <div id="dimensionStats"></div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>参与记录</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>时间</th>
+                        <th>户外年限</th>
+                        <th>运动类型</th>
+                        <th>频率</th>
+                        <th>培训</th>
+                        <th>总分</th>
+                        <th>等级</th>
+                        <th>六维度详情</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="9" class="empty">暂无数据</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const DATA_KEY = 'outdoorRiskData';
+        const COUNT_KEY = 'outdoorRiskParticipants';
+
+        // 题目标签
+        const labels = {
+            q1: ['1年以下', '1-3年', '3-5年', '5-10年', '10年以上'],
+            q2: ['徒步/露营', '登山/攀岩', '水上运动', '冰雪运动', '越野跑/马拉松'],
+            q3: ['每年1-2次', '每年3-5次', '每年6-10次', '每年10次以上'],
+            q4: ['从未参加', '1次', '2-3次', '3次以上']
+        };
+
+        const levelMap = { '入门级': 1, '初级': 2, '中级': 3, '熟练级': 4, '专家级': 5 };
+
+        function getAllData() {
+            const data = localStorage.getItem(DATA_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function loadData() {
+            const data = getAllData();
+            
+            // 更新统计卡片
+            document.getElementById('totalCount').textContent = data.length;
+            
+            if (data.length > 0) {
+                const scores = data.map(d => d.totalScore);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                document.getElementById('avgScore').textContent = avg.toFixed(1);
+                document.getElementById('maxScore').textContent = Math.max(...scores);
+                document.getElementById('minScore').textContent = Math.min(...scores);
+            } else {
+                document.getElementById('avgScore').textContent = '0';
+                document.getElementById('maxScore').textContent = '0';
+                document.getElementById('minScore').textContent = '0';
+            }
+
+            // 维度统计
+            if (data.length > 0) {
+                const dims = ['装备与准备', '风险识别', '知识与技能', '经验与判断', '身体与心理', '应急处理'];
+                let dimHtml = '<table style="margin-top:10px;"><tr><th>维度</th><th>平均分</th><th>进度</th></tr>';
+                dims.forEach(dim => {
+                    const avg = data.reduce((sum, d) => sum + (d.dims[dim] || 0), 0) / data.length;
+                    dimHtml += `<tr>
+                        <td>${dim}</td>
+                        <td><b>${avg.toFixed(1)}</b></td>
+                        <td><div class="dimension-bar"><div class="dimension-fill" style="width:${avg/100*100}%"></div></div></td>
+                    </tr>`;
+                });
+                dimHtml += '</table>';
+                document.getElementById('dimensionStats').innerHTML = dimHtml;
+            } else {
+                document.getElementById('dimensionStats').innerHTML = '<p class="empty">暂无数据</p>';
+            }
+
+            // 表格数据
+            if (data.length > 0) {
+                let tbody = '';
+                data.reverse().forEach((d, i) => {
+                    const scoreClass = d.totalScore >= 75 ? 'score-high' : d.totalScore >= 40 ? 'score-mid' : 'score-low';
+                    tbody += `<tr>
+                        <td>${data.length - i}</td>
+                        <td>${new Date(d.timestamp).toLocaleString('zh-CN')}</td>
+                        <td>${labels.q1[d.answers.q1-1] || '-'}</td>
+                        <td>${labels.q2[d.answers.q2-1] || '-'}</td>
+                        <td>${labels.q3[d.answers.q3-1] || '-'}</td>
+                        <td>${labels.q4[d.answers.q4-1] || '-'}</td>
+                        <td><span class="score-badge ${scoreClass}">${d.totalScore}</span></td>
+                        <td>${d.level}</td>
+                        <td>
+                            <small>
+                            装备:${d.dims['装备与准备']} | 风险:${d.dims['风险识别']} | 
+                            知识:${d.dims['知识与技能']} | 经验:${d.dims['经验与判断']} | 
+                            身心:${d.dims['身体与心理']} | 应急:${d.dims['应急处理']}
+                            </small>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('tableBody').innerHTML = tbody;
+            } else {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" class="empty">暂无数据</td></tr>';
+            }
+        }
+
+        function exportExcel() {
+            const data = getAllData();
+            if (data.length === 0) { alert('暂无数据可导出'); return; }
+
+            let csv = '序号,时间,户外年限,运动类型,频率,培训,总分,等级,装备与准备,风险识别,知识与技能,经验与判断,身体与心理,应急处理\n';
+            
+            data.forEach((d, i) => {
+                csv += `${i+1},${new Date(d.timestamp).toLocaleString('zh-CN')},${labels.q1[d.answers.q1-1]||''},${labels.q2[d.answers.q2-1]||''},${labels.q3[d.answers.q3-1]||''},${labels.q4[d.answers.q4-1]||''},${d.totalScore},${d.level},${d.dims['装备与准备']},${d.dims['风险识别']},${d.dims['知识与技能']},${d.dims['经验与判断']},${d.dims['身体与心理']},${d.dims['应急处理']}\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `户外风险管理评估_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearData() {
+            if (confirm('确定清空所有数据吗？此操作不可恢复！')) {
+                localStorage.removeItem(DATA_KEY);
+                localStorage.removeItem(COUNT_KEY);
+                loadData();
+            }
+        }
+
+        // 页面加载时读取数据
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>户外运动风险管理能力评估</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { max-width: 500px; width: 100%; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; }
+        .header h1 { font-size: 22px; margin-bottom: 8px; }
+        .header .tagline { font-size: 12px; opacity: 0.85; margin-top: 8px; font-style: italic; }
+        .header .creator { font-size: 11px; opacity: 0.7; margin-top: 5px; }
+        .header p { font-size: 13px; opacity: 0.9; }
+        .progress-bar { height: 4px; background: #eee; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.3s; width: 0%; }
+        .content { padding: 30px; }
+        .question-container { display: none; }
+        .question-container.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .question-number { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .question-text { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 25px; line-height: 1.5; }
+        .scale-options { display: flex; flex-direction: column; gap: 10px; }
+        .scale-option { padding: 15px 20px; background: #f8f9fa; border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; font-size: 15px; text-align: center; }
+        .scale-option:hover { background: #e9ecef; transform: translateX(5px); }
+        .scale-option.selected { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: #667eea; }
+        .basic-select { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; font-size: 15px; margin-bottom: 10px; appearance: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 15px center; }
+        .btn-group { display: flex; gap: 10px; margin-top: 30px; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-next { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-back { background: #f0f0f0; color: #666; }
+        .result { display: none; text-align: center; padding: 30px; }
+        .result.show { display: block; }
+        .score-circle { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 25px; box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .score-circle .score { font-size: 42px; font-weight: bold; }
+        .score-circle .label { font-size: 13px; opacity: 0.9; }
+        .result-info { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left; }
+        .result-info h3 { font-size: 15px; color: #333; margin-bottom: 12px; }
+        .result-info p { font-size: 13px; color: #666; margin-bottom: 8px; }
+        .result-info .highlight { color: #667eea; font-weight: 600; }
+        .rank-box { display: flex; justify-content: space-around; margin-top: 15px; }
+        .rank-item { text-align: center; }
+        .rank-item .value { font-size: 18px; font-weight: bold; color: #667eea; }
+        .rank-item .label { font-size: 11px; color: #888; margin-top: 3px; }
+        .restart-btn { background: #f0f0f0; color: #333; margin-top: 15px; width: 100%; }
+        .dimension-list { margin-top: 15px; }
+        .dimension-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .dimension-item:last-child { border-bottom: none; }
+        .dimension-name { color: #555; }
+        .dimension-score { font-weight: 600; color: #667eea; }
+        .participant-count { background: #f0f0ff; padding: 12px 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #667eea; text-align: center; }
+        .participant-count span { font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧗 户外运动风险管理能力评估</h1>
+            <p>共20题 · 满分100分</p>
+            <div class="tagline">提高风险意识，增强风险管理能力。</div>
+            <div class="creator">创建者：林深似海</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        
+        <div class="content" id="form">
+            <div class="participant-count" id="participantCount">正在加载参与人数...</div>
+            
+            <!-- Q1: 户外运动年限 -->
+            <div class="question-container active" data-q="1">
+                <div class="question-number">第 1/20 题 · 基本信息</div>
+                <div class="question-text">您的户外运动年限？</div>
+                <select class="basic-select" id="q1" onchange="selectAnswer(1, this.value)">
+                    <option value="">请选择</option>
+                    <option value="1">1年以下</option>
+                    <option value="2">1-3年</option>
+                    <option value="3">3-5年</option>
+                    <option value="4">5-10年</option>
+                    <option value="5">10年以上</option>
+                </select>
+                <div class="btn-group">
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q2: 运动类型 -->
+            <div class="question-container" data-q="2">
+                <div class="question-number">第 2/20 题 · 基本信息</div>
+                <div class="question-text">最常参与的户外运动类型？</div>
+                <select class="basic-select" id="q2" onchange="selectAnswer(2, this.value)">
+                    <option value="">请选择</option>
+                    <option value="1">徒步/露营</option>
+                    <option value="2">登山/攀岩</option>
+                    <option value="3">水上运动</option>
+                    <option value="4">冰雪运动</option>
+                    <option value="5">越野跑/马拉松</option>
+                </select>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q3: 频率 -->
+            <div class="question-container" data-q="3">
+                <div class="question-number">第 3/20 题 · 基本信息</div>
+                <div class="question-text">每年参与户外运动的频率？</div>
+                <select class="basic-select" id="q3" onchange="selectAnswer(3, this.value)">
+                    <option value="">请选择</option>
+                    <option value="1">每年1-2次</option>
+                    <option value="2">每年3-5次</option>
+                    <option value="3">每年6-10次</option>
+                    <option value="4">每年10次以上</option>
+                </select>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q4: 培训 -->
+            <div class="question-container" data-q="4">
+                <div class="question-number">第 4/20 题 · 基本信息</div>
+                <div class="question-text">是否接受过专业的户外安全培训？</div>
+                <select class="basic-select" id="q4" onchange="selectAnswer(4, this.value)">
+                    <option value="">请选择</option>
+                    <option value="1">从未参加</option>
+                    <option value="2">参加过1次</option>
+                    <option value="3">参加过2-3次</option>
+                    <option value="4">参加过3次以上</option>
+                </select>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q5: 制定计划 -->
+            <div class="question-container" data-q="5">
+                <div class="question-number">第 5/20 题 · 装备与准备</div>
+                <div class="question-text">您出行前会制定详细的计划和时间安排吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(5, 1, this)">① 从不</div>
+                    <div class="scale-option" onclick="selectScale(5, 2, this)">② 偶尔</div>
+                    <div class="scale-option" onclick="selectScale(5, 3, this)">③ 有时</div>
+                    <div class="scale-option" onclick="selectScale(5, 4, this)">④ 经常</div>
+                    <div class="scale-option" onclick="selectScale(5, 5, this)">⑤ 每次</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q6: 安全装备 -->
+            <div class="question-container" data-q="6">
+                <div class="question-number">第 6/20 题 · 装备与准备</div>
+                <div class="question-text">您会携带必要的安全装备（如GPS、急救包、应急通讯设备）吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(6, 1, this)">① 从不</div>
+                    <div class="scale-option" onclick="selectScale(6, 2, this)">② 偶尔</div>
+                    <div class="scale-option" onclick="selectScale(6, 3, this)">③ 有时</div>
+                    <div class="scale-option" onclick="selectScale(6, 4, this)">④ 经常</div>
+                    <div class="scale-option" onclick="selectScale(6, 5, this)">⑤ 每次</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q7: 了解风险信息 -->
+            <div class="question-container" data-q="7">
+                <div class="question-number">第 7/20 题 · 装备与准备</div>
+                <div class="question-text">您会提前了解目的地的天气、地形和风险信息吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(7, 1, this)">① 从不</div>
+                    <div class="scale-option" onclick="selectScale(7, 2, this)">② 偶尔</div>
+                    <div class="scale-option" onclick="selectScale(7, 3, this)">③ 有时</div>
+                    <div class="scale-option" onclick="selectScale(7, 4, this)">④ 经常</div>
+                    <div class="scale-option" onclick="selectScale(7, 5, this)">⑤ 每次</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q8: 判断天气风险 -->
+            <div class="question-container" data-q="8">
+                <div class="question-number">第 8/20 题 · 风险识别</div>
+                <div class="question-text">您能准确判断天气变化带来的风险吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(8, 1, this)">① 完全不能</div>
+                    <div class="scale-option" onclick="selectScale(8, 2, this)">② 不太能</div>
+                    <div class="scale-option" onclick="selectScale(8, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(8, 4, this)">④ 比较能</div>
+                    <div class="scale-option" onclick="selectScale(8, 5, this)">⑤ 非常能</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q9: 识别地形风险 -->
+            <div class="question-container" data-q="9">
+                <div class="question-number">第 9/20 题 · 风险识别</div>
+                <div class="question-text">您能识别地形风险（如滑坡、落石、洪水）吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(9, 1, this)">① 完全不能</div>
+                    <div class="scale-option" onclick="selectScale(9, 2, this)">② 不太能</div>
+                    <div class="scale-option" onclick="selectScale(9, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(9, 4, this)">④ 比较能</div>
+                    <div class="scale-option" onclick="selectScale(9, 5, this)">⑤ 非常能</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q10: 评估体能 -->
+            <div class="question-container" data-q="10">
+                <div class="question-number">第 10/20 题 · 风险识别</div>
+                <div class="question-text">您能评估自身体能状态和疲劳程度吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(10, 1, this)">① 完全不能</div>
+                    <div class="scale-option" onclick="selectScale(10, 2, this)">② 不太能</div>
+                    <div class="scale-option" onclick="selectScale(10, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(10, 4, this)">④ 比较能</div>
+                    <div class="scale-option" onclick="selectScale(10, 5, this)">⑤ 非常能</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q11: 急救技能 -->
+            <div class="question-container" data-q="11">
+                <div class="question-number">第 11/20 题 · 知识与技能</div>
+                <div class="question-text">您掌握基本的急救技能吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(11, 1, this)">① 完全不会</div>
+                    <div class="scale-option" onclick="selectScale(11, 2, this)">② 不太会</div>
+                    <div class="scale-option" onclick="selectScale(11, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(11, 4, this)">④ 比较熟练</div>
+                    <div class="scale-option" onclick="selectScale(11, 5, this)">⑤ 非常熟练</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q12: 导航技能 -->
+            <div class="question-container" data-q="12">
+                <div class="question-number">第 12/20 题 · 知识与技能</div>
+                <div class="question-text">您掌握导航和定位技能（地图、GPS、指南针）吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(12, 1, this)">① 完全不会</div>
+                    <div class="scale-option" onclick="selectScale(12, 2, this)">② 不太会</div>
+                    <div class="scale-option" onclick="selectScale(12, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(12, 4, this)">④ 比较熟练</div>
+                    <div class="scale-option" onclick="selectScale(12, 5, this)">⑤ 非常熟练</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q13: 决策经验 -->
+            <div class="question-container" data-q="13">
+                <div class="question-number">第 13/20 题 · 经验与判断</div>
+                <div class="question-text">您有过在复杂环境中做出正确决策的经验吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(13, 1, this)">① 完全没有</div>
+                    <div class="scale-option" onclick="selectScale(13, 2, this)">② 很少</div>
+                    <div class="scale-option" onclick="selectScale(13, 3, this)">③ 有一些</div>
+                    <div class="scale-option" onclick="selectScale(13, 4, this)">④ 较多</div>
+                    <div class="scale-option" onclick="selectScale(13, 5, this)">⑤ 经验丰富</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q14: 紧急情况冷静 -->
+            <div class="question-container" data-q="14">
+                <div class="question-number">第 14/20 题 · 经验与判断</div>
+                <div class="question-text">您能在紧急情况下保持冷静并做出判断吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(14, 1, this)">① 完全不能</div>
+                    <div class="scale-option" onclick="selectScale(14, 2, this)">② 不太能</div>
+                    <div class="scale-option" onclick="selectScale(14, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(14, 4, this)">④ 比较冷静</div>
+                    <div class="scale-option" onclick="selectScale(14, 5, this)">⑤ 非常冷静</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q15: 体能训练 -->
+            <div class="question-container" data-q="15">
+                <div class="question-number">第 15/20 题 · 身体与心理</div>
+                <div class="question-text">您会定期进行体能训练吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(15, 1, this)">① 从不训练</div>
+                    <div class="scale-option" onclick="selectScale(15, 2, this)">② 偶尔训练</div>
+                    <div class="scale-option" onclick="selectScale(15, 3, this)">③ 有时训练</div>
+                    <div class="scale-option" onclick="selectScale(15, 4, this)">④ 经常训练</div>
+                    <div class="scale-option" onclick="selectScale(15, 5, this)">⑤ 定期训练</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q16: 节奏控制 -->
+            <div class="question-container" data-q="16">
+                <div class="question-number">第 16/20 题 · 身体与心理</div>
+                <div class="question-text">您在户外运动中注重节奏控制和体力分配吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(16, 1, this)">① 完全不注重</div>
+                    <div class="scale-option" onclick="selectScale(16, 2, this)">② 不太注重</div>
+                    <div class="scale-option" onclick="selectScale(16, 3, this)">③ 一般</div>
+                    <div class="scale-option" onclick="selectScale(16, 4, this)">④ 比较注重</div>
+                    <div class="scale-option" onclick="selectScale(16, 5, this)">⑤ 非常注重</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q17: 应对突发意外 -->
+            <div class="question-container" data-q="17">
+                <div class="question-number">第 17/20 题 · 应急处理</div>
+                <div class="question-text">您知道如何应对突发意外（如受伤、走失）吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(17, 1, this)">① 完全不知道</div>
+                    <div class="scale-option" onclick="selectScale(17, 2, this)">② 不太知道</div>
+                    <div class="scale-option" onclick="selectScale(17, 3, this)">③ 知道一些</div>
+                    <div class="scale-option" onclick="selectScale(17, 4, this)">④ 比较清楚</div>
+                    <div class="scale-option" onclick="selectScale(17, 5, this)">⑤ 非常清楚</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q18: 紧急求救 -->
+            <div class="question-container" data-q="18">
+                <div class="question-number">第 18/20 题 · 应急处理</div>
+                <div class="question-text">您了解紧急求救的方法和信号吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(18, 1, this)">① 完全不了解</div>
+                    <div class="scale-option" onclick="selectScale(18, 2, this)">② 不太了解</div>
+                    <div class="scale-option" onclick="selectScale(18, 3, this)">③ 了解一些</div>
+                    <div class="scale-option" onclick="selectScale(18, 4, this)">④ 比较了解</div>
+                    <div class="scale-option" onclick="selectScale(18, 5, this)">⑤ 非常了解</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q19: 使用急救装备 -->
+            <div class="question-container" data-q="19">
+                <div class="question-number">第 19/20 题 · 应急处理</div>
+                <div class="question-text">您会使用急救装备（如止血带、夹板）吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(19, 1, this)">① 完全不会</div>
+                    <div class="scale-option" onclick="selectScale(19, 2, this)">② 不太会</div>
+                    <div class="scale-option" onclick="selectScale(19, 3, this)">③ 会一点</div>
+                    <div class="scale-option" onclick="selectScale(19, 4, this)">④ 比较熟练</div>
+                    <div class="scale-option" onclick="selectScale(19, 5, this)">⑤ 非常熟练</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="nextQuestion()" disabled>下一题</button>
+                </div>
+            </div>
+
+            <!-- Q20: 野外生存 -->
+            <div class="question-container" data-q="20">
+                <div class="question-number">第 20/20 题 · 应急处理</div>
+                <div class="question-text">您知道如何在野外获取饮用水和庇护所吗？</div>
+                <div class="scale-options">
+                    <div class="scale-option" onclick="selectScale(20, 1, this)">① 完全不知道</div>
+                    <div class="scale-option" onclick="selectScale(20, 2, this)">② 不太知道</div>
+                    <div class="scale-option" onclick="selectScale(20, 3, this)">③ 知道一些</div>
+                    <div class="scale-option" onclick="selectScale(20, 4, this)">④ 比较清楚</div>
+                    <div class="scale-option" onclick="selectScale(20, 5, this)">⑤ 非常清楚</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-back" onclick="prevQuestion()">上一题</button>
+                    <button class="btn btn-next" onclick="calculateResult()">查看结果</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div class="result" id="result">
+            <div class="participant-count" id="resultParticipantCount">正在加载参与人数...</div>
+            <div class="score-circle">
+                <span class="score" id="score">0</span>
+                <span class="label">分</span>
+            </div>
+            <div class="result-info">
+                <h3>📊 评估结果</h3>
+                <p>您的风险管理能力得分：<span class="highlight" id="scoreText">0</span>/100分</p>
+                <p>风险等级：<span class="highlight" id="level">-</span></p>
+                <p>六维度得分：</p>
+                <div class="dimension-list" id="dimensionList"></div>
+            </div>
+            <div class="rank-box">
+                <div class="rank-item">
+                    <div class="value" id="dimensionMax">-</div>
+                    <div class="label">最强维度</div>
+                </div>
+                <div class="rank-item">
+                    <div class="value" id="dimensionMin">-</div>
+                    <div class="label">待提升</div>
+                </div>
+            </div>
+            <button class="btn restart-btn" onclick="restart()">重新评估</button>
+        </div>
+    </div>
+
+    <script>
+        const answers = {};
+        let currentQ = 1;
+        const totalQ = 20;
+
+        // 数据存储键名
+        const DATA_KEY = 'outdoorRiskData';
+        const COUNT_KEY = 'outdoorRiskParticipants';
+
+        // 获取所有数据
+        function getAllData() {
+            const data = localStorage.getItem(DATA_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        // 保存数据
+        function saveData(record) {
+            const data = getAllData();
+            data.push(record);
+            localStorage.setItem(DATA_KEY, JSON.stringify(data));
+        }
+
+        // 获取参与人数
+        function getParticipantCount() {
+            let count = localStorage.getItem(COUNT_KEY);
+            return count ? parseInt(count) : 0;
+        }
+
+        // 增加参与人数
+        function incrementParticipantCount() {
+            let count = getParticipantCount() + 1;
+            localStorage.setItem(COUNT_KEY, count);
+            return count;
+        }
+
+        // 更新显示
+        function updateParticipantDisplay() {
+            const count = getParticipantCount();
+            document.getElementById('participantCount').innerHTML = `您是第 <span>${count}</span> 个参与本评估的户外爱好者`;
+        }
+
+        // 页面加载时显示人数
+        updateParticipantDisplay();
+
+        function updateProgress() {
+            document.getElementById('progress').style.width = ((currentQ - 1) / totalQ * 100) + '%';
+        }
+
+        function showQuestion(n) {
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            document.querySelector(`.question-container[data-q="${n}"]`).classList.add('active');
+            currentQ = n;
+            updateProgress();
+        }
+
+        function selectAnswer(q, val) {
+            answers[q] = parseInt(val);
+            document.querySelector(`.question-container[data-q="${q}"] .btn-next`).disabled = false;
+        }
+
+        function selectScale(q, val, elem) {
+            answers[q] = val;
+            const container = elem.parentElement;
+            container.querySelectorAll('.scale-option').forEach(o => o.classList.remove('selected'));
+            elem.classList.add('selected');
+            container.parentElement.querySelector('.btn-next').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQ < totalQ) {
+                showQuestion(currentQ + 1);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQ > 1) {
+                showQuestion(currentQ - 1);
+            }
+        }
+
+        function calculateResult() {
+            // 提交后增加参与人数
+            const participantNum = incrementParticipantCount();
+
+            // 计算各维度得分
+            const dimScores = {
+                '装备与准备': ((answers[5] + answers[6] + answers[7]) / 3 * 20).toFixed(1),
+                '风险识别': ((answers[8] + answers[9] + answers[10]) / 3 * 20).toFixed(1),
+                '知识与技能': ((answers[11] + answers[12]) / 2 * 20).toFixed(1),
+                '经验与判断': ((answers[13] + answers[14]) / 2 * 20).toFixed(1),
+                '身体与心理': ((answers[15] + answers[16]) / 2 * 20).toFixed(1),
+                '应急处理': ((answers[17] + answers[18] + answers[19] + answers[20]) / 4 * 20).toFixed(1)
+            };
+
+            // 基本信息加权（较低权重）
+            const basicScore = ((parseInt(answers[1]||1) + parseInt(answers[2]||1) + parseInt(answers[3]||1) + parseInt(answers[4]||1)) / 4 * 20);
+
+            // 总分
+            const totalScore = Math.round(
+                basicScore * 0.1 +
+                parseFloat(dimScores['装备与准备']) * 0.15 +
+                parseFloat(dimScores['风险识别']) * 0.15 +
+                parseFloat(dimScores['知识与技能']) * 0.15 +
+                parseFloat(dimScores['经验与判断']) * 0.15 +
+                parseFloat(dimScores['身体与心理']) * 0.1 +
+                parseFloat(dimScores['应急处理']) * 0.2
+            );
+
+            // 风险等级
+            let level = '入门级';
+            if (totalScore >= 90) level = '专家级';
+            else if (totalScore >= 75) level = '熟练级';
+            else if (totalScore >= 60) level = '中级';
+            else if (totalScore >= 40) level = '初级';
+
+            // 找出最强和最弱维度
+            const sortedDims = Object.entries(dimScores).sort((a, b) => b[1] - a[1]);
+            const maxDim = sortedDims[0][0];
+            const minDim = sortedDims[sortedDims.length - 1][0];
+
+            // 保存数据到本地存储
+            saveData({
+                timestamp: new Date().toISOString(),
+                answers: {...answers},
+                dims: {
+                    '装备与准备': parseFloat(dimScores['装备与准备']),
+                    '风险识别': parseFloat(dimScores['风险识别']),
+                    '知识与技能': parseFloat(dimScores['知识与技能']),
+                    '经验与判断': parseFloat(dimScores['经验与判断']),
+                    '身体与心理': parseFloat(dimScores['身体与心理']),
+                    '应急处理': parseFloat(dimScores['应急处理'])
+                },
+                totalScore: totalScore,
+                level: level
+            });
+
+            // 显示结果
+            document.getElementById('score').textContent = totalScore;
+            document.getElementById('scoreText').textContent = totalScore;
+            document.getElementById('level').textContent = level;
+            document.getElementById('dimensionMax').textContent = maxDim;
+            document.getElementById('dimensionMin').textContent = minDim;
+
+            // 显示各维度得分
+            let dimHtml = '';
+            for (const [name, score] of Object.entries(dimScores)) {
+                dimHtml += `<div class="dimension-item"><span class="dimension-name">${name}</span><span class="dimension-score">${score}分</span></div>`;
+            }
+            document.getElementById('dimensionList').innerHTML = dimHtml;
+
+            // 显示参与人数
+            document.getElementById('resultParticipantCount').innerHTML = `您是第 <span>${participantNum}</span> 个参与本评估的户外爱好者`;
+
+            document.getElementById('form').style.display = 'none';
+            document.getElementById('result').classList.add('show');
+        }
+
+        function restart() {
+            location.reload();
+        }
+    </script>
