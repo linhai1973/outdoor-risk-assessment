@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -451,5 +451,80 @@
                 currentQuestion++;
                 showQuestion(currentQuestion);
             } else {
-                submitSurvey()
-...(truncated)...
+                submitSurvey();
+            }
+        }
+
+        function calculateScore() {
+            const dimensions = {
+                '装备与准备': [7, 8, 9],
+                '风险识别': [10, 11, 12],
+                '知识与技能': [13, 14],
+                '经验与判断': [15, 16],
+                '身体与心理': [17, 18],
+                '应急处理': [19, 20, 21, 22]
+            };
+            let totalScore = 0;
+            let dimensionScores = {};
+            for (let dim in dimensions) {
+                let dimScore = 0;
+                dimensions[dim].forEach(q => { dimScore += answers[q] || 0; });
+                dimensionScores[dim] = dimScore;
+                totalScore += dimScore;
+            }
+            return { totalScore, dimensionScores };
+        }
+
+        function getRiskLevel(score) {
+            if (score >= 90) return '🌟 极低 Low Risk';
+            if (score >= 75) return '✅ 低风险 Low Risk';
+            if (score >= 60) return '⚠️ 中等风险 Medium Risk';
+            if (score >= 40) return '🔶 较高风险 High Risk';
+            return '❌ 高风险 High Risk';
+        }
+
+        function getRating(score) {
+            if (score >= 90) return 'S';
+            if (score >= 80) return 'A';
+            if (score >= 70) return 'B';
+            if (score >= 60) return 'C';
+            if (score >= 50) return 'D';
+            return 'F';
+        }
+
+        function submitSurvey() {
+            const { totalScore, dimensionScores } = calculateScore();
+            const newCount = updateParticipantCount();
+            document.getElementById('form').style.display = 'none';
+            document.getElementById('result').classList.add('show');
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('scoreText').textContent = totalScore;
+            document.getElementById('riskLevel').textContent = getRiskLevel(totalScore);
+            document.getElementById('rating').textContent = getRating(totalScore);
+            const avgScore = 60, stdScore = 15;
+            const zScore = (totalScore - avgScore) / stdScore;
+            let percentile = Math.round((1 / (1 + Math.exp(-zScore))) * 100);
+            if (percentile < 1) percentile = 1;
+            if (percentile > 99) percentile = 99;
+            document.getElementById('percentile').textContent = percentile + '%';
+            const dimNames = {'装备与准备':'Equipment','风险识别':'Risk ID','知识与技能':'Knowledge','经验与判断':'Experience','身体与心理':'Physical','应急处理':'Emergency'};
+            let dimHtml = '';
+            for (let dim in dimensionScores) { dimHtml += '<div class="dimension-item"><span class="dimension-name">' + dim + ' ' + dimNames[dim] + '</span><span class="dimension-score">' + dimensionScores[dim] + '</span></div>'; }
+            document.getElementById('dimensionList').innerHTML = dimHtml;
+            document.getElementById('resultParticipantCount').innerHTML = '🏃 您是第 <span>' + newCount + '</span> 个参与本评估的户外爱好者';
+        }
+
+        function restart() {
+            currentQuestion = 1; answers = {};
+            document.querySelectorAll('.scale-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.basic-select').forEach(sel => sel.value = '');
+            document.querySelectorAll('.btn-next').forEach(btn => btn.disabled = true);
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('form').style.display = 'block';
+            showQuestion(1); loadParticipantCount();
+        }
+
+        loadParticipantCount(); showQuestion(1);
+    </script>
+</body>
+</html>
