@@ -51,6 +51,7 @@
         .dimension-name { color: #555; }
         .dimension-score { font-weight: 600; color: #667eea; }
         .participant-count { background: #f0f0ff; padding: 12px 15px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; color: #667eea; text-align: center; }
+        .creator-bar { background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%); padding: 12px 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(102,126,234,0.2); }
         .participant-count span { font-weight: bold; font-size: 18px; }
     </style>
 </head>
@@ -63,7 +64,13 @@
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
         <div class="content" id="form">
-            <div class="participant-count" id="participantCount">🏃 感谢您参与本评估</div>
+            <div class="creator-bar" id="participantCount">
+                <div style="font-size:12px;line-height:1.8;text-align:center">
+                    <div>创建者：林深似海</div>
+                    <div>Creator: Linshensihai</div>
+                    <div>Email: 317884269@qq.com</div>
+                </div>
+            </div>
 
             <!-- Q1: 国籍 -->
             <div class="question-container active" data-q="1">
@@ -602,7 +609,11 @@
             </div>
             <div class="participant-count" id="resultParticipantCount"></div>
             <div class="result-info">
-                <p style="font-size:11px;color:#888;margin-bottom:12px;text-align:center">创建者：林深似海 | 邮箱：317884269@qq.com</p>
+                <p style="font-size:11px;color:#888;margin-bottom:12px;text-align:center">
+                    创建者：林深似海<br>
+                    Creator: Linshensihai<br>
+                    Email: 317884269@qq.com
+                </p>
                 <h3>📊 评估结果 Analysis</h3>
                 <p>您的风险管理能力得分：<span class="highlight" id="scoreText">0</span>分（满分100分）</p>
                 <p>风险等级：<span class="highlight" id="riskLevel">-</span></p>
