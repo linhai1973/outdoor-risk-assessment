@@ -619,6 +619,10 @@
                 </div>
             </div>
             <button class="btn restart-btn" onclick="restart()">重新评估 Restart</button>
+            <div style="margin-top:20px;text-align:center">
+                <p style="font-size:12px;color:#888;margin-bottom:10px">愿意贡献您的数据参与研究？</p>
+                <button class="btn" style="background:linear-gradient(135deg,#52c41a,#389e0d);color:white;width:100%" onclick="submitToResearch()">📤 提交数据参与研究 Submit Data</button>
+            </div>
         </div>
     </div>
 
@@ -741,6 +745,26 @@
             document.getElementById('result').classList.remove('show');
             document.getElementById('form').style.display = 'block';
             showQuestion(1); loadParticipantCount();
+        }
+
+        // 提交数据到腾讯问卷
+        function submitToResearch() {
+            // 保存数据到 localStorage，供用户在腾讯问卷填写时参考
+            const surveyData = {
+                nationality: document.getElementById('q1')?.value || '',
+                age: document.getElementById('q2')?.value || '',
+                experience: document.getElementById('q3')?.value || '',
+                totalScore: document.getElementById('totalScore')?.textContent || '0',
+                riskLevel: document.getElementById('riskLevel')?.textContent?.replace(/[🌟✅⚠️🔶❌]/g, '').trim() || '-',
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('outdoorRiskSurveyData', JSON.stringify(surveyData));
+            
+            // 显示提示并跳转
+            alert('您的评估结果：\n\n总分：' + surveyData.totalScore + ' 分\n风险等级：' + surveyData.riskLevel + '\n\n点击确定后将跳转到数据收集页面，请填写基本信息并提交。');
+            
+            // 跳转到腾讯问卷
+            window.open('https://wj.qq.com/s2/26227583/224c/', '_blank');
         }
 
         loadParticipantCount(); showQuestion(1);
