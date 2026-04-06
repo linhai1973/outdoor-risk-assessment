@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -59,6 +59,7 @@
         <div class="header">
             <h1>🧗 户外运动风险管理能力评估<br><small style="font-size:14px;font-weight:400">Outdoor Risk Management Assessment</small></h1>
             <p>共22题 · 满分100分 | 22 Questions · Max 100 Points</p>
+            <p style="font-size:11px;margin-top:8px;opacity:0.8">创建者：林深似海 | 微信号：linshenshihai | 邮箱：317884269@qq.com</p>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
         <div class="content" id="form">
@@ -152,7 +153,6 @@
 
             <!-- Q7: 制定计划 -->
     
-...(truncated)...
 
             <!-- Q7: 制定计划 -->
             <div class="question-container" data-q="7">
@@ -387,6 +387,7 @@
             </div>
             <div class="participant-count" id="resultParticipantCount"></div>
             <div class="result-info">
+                <p style="font-size:11px;color:#888;margin-bottom:12px;text-align:center">创建者：林深似海 | 微信号：linshenshihai | 邮箱：317884269@qq.com</p>
                 <h3>📊 评估结果 Analysis</h3>
                 <p>您的风险管理能力得分：<span class="highlight" id="scoreText">0</span>分（满分100分）</p>
                 <p>风险等级：<span class="highlight" id="riskLevel">-</span></p>
@@ -508,12 +509,8 @@
             document.getElementById('scoreText').textContent = totalScore;
             document.getElementById('riskLevel').textContent = getRiskLevel(totalScore);
             document.getElementById('rating').textContent = getRating(totalScore);
-            const avgScore = 60, stdScore = 15;
-            const zScore = (totalScore - avgScore) / stdScore;
-            let percentile = Math.round((1 / (1 + Math.exp(-zScore))) * 100);
-            if (percentile < 1) percentile = 1;
-            if (percentile > 99) percentile = 99;
-            document.getElementById('percentile').textContent = percentile + '%';
+            // 百分位功能暂未开放
+            document.getElementById('percentile').textContent = '-';
             const dimNames = {'装备与准备':'Equipment','风险识别':'Risk ID','知识与技能':'Knowledge','经验与判断':'Experience','身体与心理':'Physical','应急处理':'Emergency'};
             let dimHtml = '';
             for (let dim in dimensionScores) { dimHtml += '<div class="dimension-item"><span class="dimension-name">' + dim + ' ' + dimNames[dim] + '</span><span class="dimension-score">' + dimensionScores[dim] + '</span></div>'; }
