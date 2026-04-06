@@ -63,7 +63,7 @@
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
         <div class="content" id="form">
-            <div class="participant-count" id="participantCount">Loading...</div>
+            <div class="participant-count" id="participantCount">🏃 感谢您参与本评估</div>
 
             <!-- Q1: 国籍 -->
             <div class="question-container active" data-q="1">
@@ -632,8 +632,9 @@
         let answers = {};
 
         function loadParticipantCount() {
+            // 仅在 restart 时使用 localStorage 计数（微信环境下不准确）
             const count = localStorage.getItem('outdoorRiskParticipantCount') || 0;
-            document.getElementById('participantCount').innerHTML = '🏃 您是第 <span>' + count + '</span> 个参与本评估的户外爱好者';
+            document.getElementById('participantCount').innerHTML = '🏃 感谢您参与本评估';
         }
 
         function updateParticipantCount() {
