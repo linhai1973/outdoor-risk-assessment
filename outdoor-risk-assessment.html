@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -69,7 +69,7 @@
             <div class="question-container active" data-q="1">
                 <div class="question-number">1/22 · 基本信息 Basic Info</div>
                 <div class="question-text">您的国籍 / Your Nationality<span class="en">Select your nationality</span></div>
-                <select class="basic-select" id="q1" onchange="selectAnswer(1, this.value)">
+                <select class="basic-select" id="q1" onchange="handleNationalityChange(this.value)">
                     <option value="">请选择 Please select</option>
                     <optgroup label="中国 China">
                         <option value="CN-MAINLAND">中国大陆 Chinese Mainland</option>
@@ -289,6 +289,7 @@
                         <option value="OTHER">其他（请注明）Other (please specify)</option>
                     </optgroup>
                 </select>
+                <input type="text" class="basic-input" id="q1-text" placeholder="请填写具体国籍 / Please specify your nationality" style="display:none;margin-top:10px;" oninput="updateNationalityAnswer()">
                 <div class="btn-group"><button class="btn btn-next" onclick="nextQuestion()" disabled>下一题 Next</button></div>
             </div>
 
@@ -743,6 +744,34 @@
         }
 
         loadParticipantCount(); showQuestion(1);
+    
+        // 处理国籍选择变化
+        function handleNationalityChange(value) {
+            const textInput = document.getElementById('q1-text');
+            if (value === 'DUAL' || value === 'OTHER') {
+                textInput.style.display = 'block';
+                textInput.focus();
+                // 先不启用下一题按钮，等用户填写文本
+                document.querySelector('[data-q="1"] .btn-next').disabled = true;
+            } else {
+                textInput.style.display = 'none';
+                textInput.value = '';
+                selectAnswer(1, value);
+            }
+        }
+        
+        // 更新国籍文本答案
+        function updateNationalityAnswer() {
+            const select = document.getElementById('q1');
+            const text = document.getElementById('q1-text').value.trim();
+            if (text) {
+                const fullAnswer = select.value + ':' + text;
+                selectAnswer(1, fullAnswer);
+            } else {
+                document.querySelector('[data-q="1"] .btn-next').disabled = true;
+            }
+        }
+        
     </script>
 </body>
 </html>
