@@ -747,24 +747,64 @@
             showQuestion(1); loadParticipantCount();
         }
 
-        // 提交数据到腾讯问卷
+        // 提交数据到腾讯问卷（自动预填）
         function submitToResearch() {
-            // 保存数据到 localStorage，供用户在腾讯问卷填写时参考
-            const surveyData = {
-                nationality: document.getElementById('q1')?.value || '',
-                age: document.getElementById('q2')?.value || '',
-                experience: document.getElementById('q3')?.value || '',
-                totalScore: document.getElementById('totalScore')?.textContent || '0',
-                riskLevel: document.getElementById('riskLevel')?.textContent?.replace(/[🌟✅⚠️🔶❌]/g, '').trim() || '-',
-                timestamp: new Date().toISOString()
+            const totalScore = document.getElementById('totalScore')?.textContent || '0';
+            const riskLevel = document.getElementById('riskLevel')?.textContent?.replace(/[🌟✅⚠️🔶❌]/g, '').trim() || '-';
+            
+            // 映射国籍选项到腾讯问卷选项ID
+            const nationalityMap = {
+                '中国大陆': 'o-101-ef40', '中国香港': 'o-102-ee24', '中国澳门': 'o-103-39fa', '中国台湾': 'o-104-8819',
+                '日本': 'o-105-874e', '韩国': 'o-106-d0b6', '朝鲜': 'o-107-bcec', '蒙古': 'o-108-b031',
+                '越南': 'o-109-99ba', '泰国': 'o-110-e366', '马来西亚': 'o-111-e823', '新加坡': 'o-112-cd91',
+                '印度尼西亚': 'o-113-3440', '菲律宾': 'o-114-1d89', '美国': 'o-151-8bb8', '加拿大': 'o-152-231c',
+                '英国': 'o-164-3d33', '法国': 'o-165-e9b4', '德国': 'o-166-3b46', '澳大利亚': 'o-187-907c',
+                '新西兰': 'o-188-fc26', '其他': 'o-226-4e81'
             };
-            localStorage.setItem('outdoorRiskSurveyData', JSON.stringify(surveyData));
+            
+            // 映射年龄组选项到腾讯问卷选项ID
+            const ageMap = {
+                '10-14岁': 'o-101-cd36', '15-19岁': 'o-102-a6bc', '20-24岁': 'o-103-ec46',
+                '25-29岁': 'o-104-9b24', '30-34岁': 'o-105-d2ed', '35-39岁': 'o-106-ae76',
+                '40-44岁': 'o-107-26f4', '45-49岁': 'o-108-d1a5', '50-54岁': 'o-109-801b',
+                '55-59岁': 'o-110-ecd9', '60-64岁': 'o-111-dc44', '65-69岁': 'o-113-a0c2',
+                '70-74岁': 'o-114-1daf', '75-79岁': 'o-115-8ed4', '80岁以上': 'o-112-84a9'
+            };
+            
+            // 映射户外年限选项到腾讯问卷选项ID
+            const expMap = {
+                '不到1年': 'o-101-2ebd', '1-2年': 'o-102-7f79', '3-5年': 'o-103-f1d6',
+                '6-10年': 'o-104-8457', '11-20年': 'o-105-9c7d', '21年以上': 'o-106-0e75'
+            };
+            
+            // 获取用户选择
+            const nationality = document.getElementById('q1')?.value || '';
+            const age = document.getElementById('q2')?.value || '';
+            const experience = document.getElementById('q3')?.value || '';
+            
+            // 构建预填URL
+            let url = 'https://wj.qq.com/s2/26227583/224c/?';
+            const params = [];
+            
+            if (nationality && nationalityMap[nationality]) {
+                params.push('q-1-abcd=' + nationalityMap[nationality]);
+            }
+            if (age && ageMap[age]) {
+                params.push('q-2-DdLk=' + ageMap[age]);
+            }
+            if (experience && expMap[experience]) {
+                params.push('q-3-IxxC=' + expMap[experience]);
+            }
+            params.push('q-4-4Co5=' + encodeURIComponent(totalScore));
+            params.push('q-5-oL2N=' + encodeURIComponent(riskLevel));
+            
+            url += params.join('&');
             
             // 显示提示并跳转
-            alert('您的评估结果：\n\n总分：' + surveyData.totalScore + ' 分\n风险等级：' + surveyData.riskLevel + '\n\n点击确定后将跳转到数据收集页面，请填写基本信息并提交。');
+            alert('您的评估结果：\n\n总分：' + totalScore + ' 分\n风险等级：' + riskLevel + '\n\n点击确定后将跳转到数据收集页面，信息已自动填充，确认后请点击提交。');
             
-            // 跳转到腾讯问卷
-            window.open('https://wj.qq.com/s2/26227583/224c/', '_blank');
+            // 跳转到腾讯问卷（带预填参数）
+            window.open(url, '_blank');
         }
 
         loadParticipantCount(); showQuestion(1);
