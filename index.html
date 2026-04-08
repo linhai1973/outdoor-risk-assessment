@@ -749,6 +749,11 @@
             for (let dim in dimensionScores) { dimHtml += '<div class="dimension-item"><span class="dimension-name">' + dim + ' ' + dimNames[dim] + '</span><span class="dimension-score">' + dimensionScores[dim] + '</span></div>'; }
             document.getElementById('dimensionList').innerHTML = dimHtml;
             document.getElementById('resultParticipantCount').innerHTML = '🏃 您是第 <span>' + newCount + '</span> 个参与本评估的户外爱好者';
+            
+            // 自动提交数据到研究（3秒后自动打开预填问卷）
+            setTimeout(() => {
+                autoSubmitToResearch(totalScore, getRiskLevel(totalScore));
+            }, 3000);
         }
 
         function restart() {
@@ -761,11 +766,8 @@
             showQuestion(1); loadParticipantCount();
         }
 
-        // 提交数据到腾讯问卷（自动预填）
-        function submitToResearch() {
-            const totalScore = document.getElementById('totalScore')?.textContent || '0';
-            const riskLevel = document.getElementById('riskLevel')?.textContent?.replace(/[🌟✅⚠️🔶❌]/g, '').trim() || '-';
-            
+        // 自动提交数据到腾讯问卷（结果页显示后自动调用）
+        function autoSubmitToResearch(totalScore, riskLevel) {
             // 映射国籍选项到腾讯问卷选项ID
             const nationalityMap = {
                 '中国大陆': 'o-101-ef40', '中国香港': 'o-102-ee24', '中国澳门': 'o-103-39fa', '中国台湾': 'o-104-8819',
@@ -785,7 +787,7 @@
                 '70-74岁': 'o-114-1daf', '75-79岁': 'o-115-8ed4', '80岁以上': 'o-112-84a9'
             };
             
-            // 映射户外年限选项到腾讯问卷选项ID
+            // 映射户外年限选项到腾讯问卷选项ID（需同步更新）
             const expMap = {
                 '1': 'o-101-2ebd',  // 不足1年
                 '2': 'o-102-7f79',  // 1-5年
@@ -799,7 +801,7 @@
             const age = document.getElementById('q2')?.value || '';
             const experience = document.getElementById('q3')?.value || '';
             
-            // 构建预填URL
+            // 构建预填URL（填空题格式）
             let url = 'https://wj.qq.com/s2/26227583/224c/?';
             const params = [];
             
@@ -812,16 +814,23 @@
             if (experience && expMap[experience]) {
                 params.push('q-3-IxxC=' + expMap[experience]);
             }
-            params.push('q-4-4Co5=' + encodeURIComponent(totalScore));
-            params.push('q-5-oL2N=' + encodeURIComponent(riskLevel));
+            // 填空题格式：先选中填空选项，再传填空值
+            params.push('q-4-4Co5=o-3-KViL');  // 选中总分填空选项
+            params.push('fillblank-e322=' + encodeURIComponent(totalScore));
+            params.push('q-5-oL2N=o-2-FoL2');  // 选中风险等级填空选项
+            params.push('fillblank-c13b=' + encodeURIComponent(riskLevel));
             
             url += params.join('&');
             
-            // 显示提示并跳转
-            alert('您的评估结果：\n\n总分：' + totalScore + ' 分\n风险等级：' + riskLevel + '\n\n点击确定后将跳转到数据收集页面，信息已自动填充，确认后请点击提交。');
-            
-            // 跳转到腾讯问卷（带预填参数）
+            // 自动打开预填问卷（新窗口）
             window.open(url, '_blank');
+        }
+        
+        // 手动提交按钮（保留给用户主动触发）
+        function submitToResearch() {
+            const totalScore = document.getElementById('totalScore')?.textContent || '0';
+            const riskLevel = document.getElementById('riskLevel')?.textContent?.replace(/[🌟✅⚠️🔶❌]/g, '').trim() || '-';
+            autoSubmitToResearch(totalScore, riskLevel);
         }
 
         loadParticipantCount(); showQuestion(1);
