@@ -329,14 +329,16 @@
             <div class="question-container" data-q="4">
                 <div class="question-number">4/22 · 基本信息 Basic Info</div>
                 <div class="question-text">最常参与的户外运动类型 / Main Outdoor Activity<span class="en">What type of outdoor sports do you participate in most?</span></div>
-                <select class="basic-select" id="q4" onchange="selectAnswer(4, this.value)">
+                <select class="basic-select" id="q4" onchange="handleActivityChange(this.value)">
                     <option value="">请选择 Please select</option>
                     <option value="1">徒步/登山 Hiking/Climbing</option>
                     <option value="2">跑步/马拉松 Running/Marathon</option>
                     <option value="3">水上运动 Water Sports</option>
                     <option value="4">冰雪运动 Ice/Snow Sports</option>
                     <option value="5">越野跑 Trail Running</option>
+                    <option value="6">其他 Other</option>
                 </select>
+                <input type="text" class="basic-input" id="q4-text" placeholder="请说明请楚楚 Please specify" style="display:none;" onchange="selectActivityOther()">
                 <div class="btn-group"><button class="btn btn-back" onclick="prevQuestion()">上一题 Back</button><button class="btn btn-next" onclick="nextQuestion()" disabled>下一题 Next</button></div>
             </div>
 
@@ -848,6 +850,32 @@
                 selectAnswer(1, fullAnswer);
             } else {
                 document.querySelector('[data-q="1"] .btn-next').disabled = true;
+            }
+        }
+        
+        // 处理运动类型选择变化
+        function handleActivityChange(value) {
+            const textInput = document.getElementById('q4-text');
+            if (value === '6') { // 其他
+                textInput.style.display = 'block';
+                textInput.focus();
+                document.querySelector('[data-q="4"] .btn-next').disabled = true;
+            } else {
+                textInput.style.display = 'none';
+                textInput.value = '';
+                selectAnswer(4, value);
+            }
+        }
+        
+        // 更新运动类型其他答案
+        function selectActivityOther() {
+            const select = document.getElementById('q4');
+            const text = document.getElementById('q4-text').value.trim();
+            if (text) {
+                const fullAnswer = select.value + ':' + text;
+                selectAnswer(4, fullAnswer);
+            } else {
+                document.querySelector('[data-q="4"] .btn-next').disabled = true;
             }
         }
         
