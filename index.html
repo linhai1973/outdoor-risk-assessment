@@ -76,7 +76,8 @@
             <div class="question-container active" data-q="1">
                 <div class="question-number">1/22 · 基本信息 Basic Info</div>
                 <div class="question-text">您来自哪个国家或地区？ / Which country or region are you from?<span class="en">Select your country or region</span></div>
-                                    <option value="">请选择 Please select</option>
+                <select class="basic-select" id="q1" onchange="handleNationalityChange(this.value)">
+                    <option value="">请选择 Please select</option>
                     <optgroup label="东亚 East Asia">
                         <option value="CN-TW">中国台湾 Taiwan, China</option>
                         <option value="CN-MAINLAND">中国大陆 Chinese Mainland</option>
@@ -288,6 +289,7 @@
                         <option value="MG">马达加斯加 Madagascar</option>
                         <option value="ML">马里 Mali</option>
                     </optgroup>
+                </select>
 
                 <input type="text" class="basic-input" id="q1-text" placeholder="请填写具体国籍 / Please specify your nationality" style="display:none;margin-top:10px;" oninput="updateNationalityAnswer()">
                 <div class="btn-group"><button class="btn btn-next" onclick="nextQuestion()" disabled>下一题 Next</button></div>
