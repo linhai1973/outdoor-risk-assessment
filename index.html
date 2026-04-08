@@ -316,11 +316,11 @@
                 <div class="question-text">您的户外运动年限 / Years of Outdoor Sports<span class="en">How long have you been doing outdoor sports?</span></div>
                 <select class="basic-select" id="q3" onchange="selectAnswer(3, this.value)">
                     <option value="">请选择 Please select</option>
-                    <option value="1">1年以下 Less than 1 year</option>
-                    <option value="2">1-3年 1-3 years</option>
-                    <option value="3">3-5年 3-5 years</option>
-                    <option value="4">5-10年 5-10 years</option>
-                    <option value="5">10年以上 Over 10 years</option>
+                    <option value="1">不足1年 Less than 1 year</option>
+                    <option value="2">1-5年 1-5 years</option>
+                    <option value="3">6-10年 6-10 years</option>
+                    <option value="4">11-15年 11-15 years</option>
+                    <option value="5">16年以上 Over 16 years</option>
                 </select>
                 <div class="btn-group"><button class="btn btn-back" onclick="prevQuestion()">上一题 Back</button><button class="btn btn-next" onclick="nextQuestion()" disabled>下一题 Next</button></div>
             </div>
@@ -785,8 +785,11 @@
             
             // 映射户外年限选项到腾讯问卷选项ID
             const expMap = {
-                '不到1年': 'o-101-2ebd', '1-2年': 'o-102-7f79', '3-5年': 'o-103-f1d6',
-                '6-10年': 'o-104-8457', '11-20年': 'o-105-9c7d', '21年以上': 'o-106-0e75'
+                '1': 'o-101-2ebd',  // 不足1年
+                '2': 'o-102-7f79',  // 1-5年
+                '3': 'o-103-f1d6',  // 6-10年
+                '4': 'o-104-8457',  // 11-15年
+                '5': 'o-105-9c7d'   // 16年以上
             };
             
             // 获取用户选择
